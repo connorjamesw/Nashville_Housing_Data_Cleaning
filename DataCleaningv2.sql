@@ -1,4 +1,4 @@
--- DATA CLEANING IN SQL USING NASHVILLE HOUSING DATA
+-- Cleaning Nashville Housing Data Using SQL Server
 
 
 -- DATASOURCE: https://www.kaggle.com/tmthyjames/nashville-housing-data
@@ -23,6 +23,8 @@ SET SalesDateConverted = CONVERT(DATE,SaleDate);
 
 
 
+
+
 --####################################################################################
 -- Populate Property Address data
 
@@ -36,33 +38,33 @@ SET SalesDateConverted = CONVERT(DATE,SaleDate);
 -- The following query returns records from the NashvilleHousing table for which PropertyAddress is NULL and the ParcelID is not unique to that record.
 -- It additionally returns the PropertyAddress of a different but corrosponding record with the same ParcelID.
 
-SELECT a.ParcelID, a.PropertyAddress, b.PropertyAddress
+SELECT a.ParcelID, 
+       a.PropertyAddress, 
+       b.PropertyAddress
 FROM NashvilleHousing a
-JOIN NashvilleHousing b
-	ON a.ParcelID = b.ParcelID 
-	AND a.UniqueID <> b.UniqueID  
-WHERE a.PropertyAddress IS NULL ;
+          JOIN 
+     NashvilleHousing b ON a.ParcelID = b.ParcelID 
+     			AND a.UniqueID <> b.UniqueID  
+WHERE a.PropertyAddress IS NULL;
+
 
 -- For all such records the NULL PropertyAddress will be populated with the PropertyAddress of the record with the corrosponding ParcelID, done so using 'ISNULL'
+
 
 UPDATE a
 SET PropertyAddress = ISNULL(a.PropertyAddress,b.PropertyAddress)
 FROM NashvilleHousing a
-JOIN NashvilleHousing b
-	ON a.ParcelID = b.ParcelID 
-	AND a.UniqueID <> b.UniqueID  
+         JOIN 
+     NashvilleHousing b ON a.ParcelID = b.ParcelID 
+     			AND a.UniqueID <> b.UniqueID  
 WHERE a.PropertyAddress IS NULL ;
-
-
-
-
 
 
 
 
 
 --####################################################################################
--- Breaking out PropertyAddress into Individual Columns (Address, City)
+-- Separating PropertyAddress into Individual Columns (Address, City)
 
 -- As is stands, PropertyAddress is given as 'adddress, city' with street name and city separated by a comma.
 
@@ -87,9 +89,8 @@ SET PropertySplitCity = SUBSTRING(PropertyAddress,CHARINDEX(',',PropertyAddress)
 
 
 
-
 --####################################################################################
--- Breaking out OwnerAddress into separate columns. 
+-- Separating OwnerAddress into separate columns. 
 
 -- OwnerAddress is given as 'address, city, state' with address, city and state separated by commas.
 
@@ -132,6 +133,7 @@ SET OwnerSplitState = PARSENAME(REPLACE(OwnerAddress,',','.'),1)
 
 
 
+
 --####################################################################################
 -- Changing Y and N to Yes and No in "Sold as Vacant" field
 
@@ -150,12 +152,11 @@ SET SoldAsVacant = CASE WHEN SoldAsVacant = 'Y' THEN 'Yes'
 						WHEN SoldAsVacant = 'N' THEN 'No'
 						ELSE SoldAsVacant
 						END;
-
-
-
-
-
-
+						
+						
+						
+						
+						
 --####################################################################################
 -- Identifying Duplicates
 
@@ -166,12 +167,12 @@ SET SoldAsVacant = CASE WHEN SoldAsVacant = 'Y' THEN 'Yes'
 SELECT *, 
 	ROW_NUMBER() OVER (     -- NB: ROW_NUMBER() returns the sequential number of a row within a partition of a result set
 	PARTITION BY ParcelID,
-		         PropertyAddress,
-				 SalePrice,
-				 SaleDate,
-				 LegalReference
-				 ORDER BY UniqueID
-				 ) AS row_num
+		     PropertyAddress,
+		     SalePrice,
+		     SaleDate,
+		     LegalReference
+		     ORDER BY UniqueID
+		     ) AS row_num
 FROM NashvilleHousing
 
 
@@ -187,16 +188,17 @@ FROM NashvilleHousing
 -- This will return an output of all the duplicate records.
 
 
-WITH RowNumCTE AS(
+WITH RowNumCTE AS
+(
 SELECT *, 
 	ROW_NUMBER() OVER (     
 	PARTITION BY ParcelID,
-		         PropertyAddress,
-				 SalePrice,
-				 SaleDate,
-				 LegalReference
-				 ORDER BY UniqueID
-				 ) AS row_num
+		     PropertyAddress,
+		     SalePrice,
+		     SaleDate,
+		     LegalReference
+		     ORDER BY UniqueID
+		     ) AS row_num
 
 FROM NashvilleHousing
 )
@@ -226,8 +228,6 @@ ORDER BY PropertyAddress;
 --DELETE 
 --FROM RowNumCTE
 --WHERE row_num > 1;
-
-
 
 
 
