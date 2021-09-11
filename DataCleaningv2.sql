@@ -9,11 +9,11 @@
 -- Standardising Date Format
 
 
--- SaleDate is given in a DATETIME format, with hours, mins, seconds included.
+-- SaleDate is given in a DATETIME format, with hours, minutes, seconds included.
 -- DATE format, giving just the day, month and year, is the desired foramt
 
 
--- Adding new date column which lists the date in DATE form
+-- Adding new date column with a DATE data type
 
 ALTER TABLE NashvilleHousing
 ADD SalesDateConverted DATE;
@@ -27,7 +27,7 @@ SET SalesDateConverted = CONVERT(DATE,SaleDate);
 -- Populate Property Address data
 
 
--- Some of the property addresses in the data set are NULL.
+-- Some of the property addresses in the table are NULL.
 
 -- ParcelIDs corrospond to property address. So, if for one record a ParcelID and a property address are listed, and for another record 
 -- the same ParcelID but a NULL property address, we will populate the NULL property address with the address corrosponding to the given ParcelID.
@@ -43,7 +43,7 @@ JOIN NashvilleHousing b
 	AND a.UniqueID <> b.UniqueID  
 WHERE a.PropertyAddress IS NULL ;
 
--- For all such records I will populate the NULL PropertyAddress with the PropertyAddress of the record with the corrosponding ParcelID. Done so using 'ISNULL'
+-- For all such records the NULL PropertyAddress will be populated with the PropertyAddress of the record with the corrosponding ParcelID, done so using 'ISNULL'
 
 UPDATE a
 SET PropertyAddress = ISNULL(a.PropertyAddress,b.PropertyAddress)
@@ -64,7 +64,7 @@ WHERE a.PropertyAddress IS NULL ;
 --####################################################################################
 -- Breaking out PropertyAddress into Individual Columns (Address, City)
 
--- As is stands, PropertyAddress is given as 'adddress number, city' with street name and city separated by a comma.
+-- As is stands, PropertyAddress is given as 'adddress, city' with street name and city separated by a comma.
 
 
 -- Creating separate columns for Address and City from the PropertyAddress column.
@@ -133,7 +133,6 @@ SET OwnerSplitState = PARSENAME(REPLACE(OwnerAddress,',','.'),1)
 
 
 --####################################################################################
-
 -- Changing Y and N to Yes and No in "Sold as Vacant" field
 
 -- Most columns are populated with 'Yes' or 'No' already
@@ -158,9 +157,7 @@ SET SoldAsVacant = CASE WHEN SoldAsVacant = 'Y' THEN 'Yes'
 
 
 --####################################################################################
-
 -- Identifying Duplicates
-
 
 
 -- Partioning by ROW_NUMBER() over five different fields
@@ -237,7 +234,6 @@ ORDER BY PropertyAddress;
 
 
 --####################################################################################
-
 -- Deleting columns made redundant by the newly created ones.
 
 ALTER TABLE NashvilleHousing
